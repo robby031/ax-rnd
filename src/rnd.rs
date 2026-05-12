@@ -1,12 +1,12 @@
 #[derive(Clone, Copy, Debug)]
-pub struct Axrnd {
+pub struct AxRng {
     state: u64,
 }
 
 const GR: u64 = 0x9E3779B97F4A7C15;
 const SPLIT_INC: u64 = 0x9E3779B97F4A7C15;
 
-impl Axrnd {
+impl AxRng {
     #[inline]
     pub const fn new(seed: u64) -> Self {
         Self { state: seed }
@@ -166,7 +166,7 @@ impl Axrnd {
     }
 }
 
-impl Default for Axrnd {
+impl Default for AxRng {
     #[inline]
     fn default() -> Self {
         const { Self::new(0xA0761D6478BD642F) }
@@ -174,17 +174,17 @@ impl Default for Axrnd {
 }
 
 #[inline(always)]
-pub fn fill_bytes(rnd: &mut Axrnd, out: &mut [u8]) {
+pub fn fill_bytes(rnd: &mut AxRng, out: &mut [u8]) {
     rnd.fill_bytes(out)
 }
 
 #[inline(always)]
-pub fn fill_u64(rnd: &mut Axrnd, out: &mut [u64]) {
+pub fn fill_u64(rnd: &mut AxRng, out: &mut [u64]) {
     rnd.fill_u64(out)
 }
 
 #[inline(always)]
-pub fn fill_u32(rnd: &mut Axrnd, out: &mut [u32]) {
+pub fn fill_u32(rnd: &mut AxRng, out: &mut [u32]) {
     let len = out.len();
     let mut i = 0;
     while i + 8 <= len {

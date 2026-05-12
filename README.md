@@ -10,7 +10,7 @@ Axrnd is a fast, small random number generator (rnd) library and CLI tool writte
 
 **Features:**
 
-- **Fast:** Outperforms `fastrand` in both single-call and bulk operations
+- **Fast:** Single-call and bulk operations
 - **Small:** Single `u64` state (32 bytes with alignment)
 - **Pure Rust:** No external dependencies
 - **CLI Tool:** Installable via `cargo install ax-rnd`
@@ -56,20 +56,46 @@ cargo install ax-rnd
 
 ### Basic Usage
 
+#### Convenience API (like fastrand)
+
+For quick random generation without managing state:
+
 ```rust
-use ax_rnd::{rnd, Axrnd};
+use ax_rnd::{u8, u16, u32, u64, bool, f32, f64, alphanumeric, base64url, fill};
 
-// Create rnd with seed
-let mut rnd = Axrnd::new(12345);
+// Generate random numbers directly
+let x = u32();
+let y = u64();
+let b = bool();
 
-// Or use convenience function
-let mut rnd = rnd(12345);
+// Generate random floats
+let f = f32();
+let d = f64();
+
+// Generate random strings
+let token = alphanumeric(32);  // base62 alphanumeric
+let url_token = base64url(32);  // base64url (URL-safe)
+
+// Fill buffers
+let mut buf = [0u8; 1024];
+fill(&mut buf);
+```
+
+#### Deterministic API (with seed control)
+
+For production use where you need deterministic behavior:
+
+```rust
+use ax_rnd::{rnd, AxRng};
+
+// Create RNG with seed
+let mut rng = rnd(12345);
 
 // Generate random values
-let x = rnd.next_u64();
-let y = rnd.next_u32();
-let b = rnd.next_bool();
-let f = rnd.next_f64();
+let x = rng.next_u64();
+let y = rng.next_u32();
+let b = rng.next_bool();
+let f = rng.next_f64();
 ```
 
 ### Alphanumeric Strings

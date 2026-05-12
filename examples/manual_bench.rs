@@ -380,7 +380,7 @@ fn bench_startup_latency() {
     let start = Instant::now();
     let mut iters: u64 = 0;
     loop {
-        black_box(ax_rnd::Axrnd::new(123));
+        black_box(ax_rnd::AxRng::new(123));
         iters += 1;
         if iters % 4096 == 0 && start.elapsed() >= target {
             break;
@@ -490,7 +490,7 @@ fn print_memory_footprint() {
     println!("\n=== memory footprint ===");
     println!(
         "  AxRnd struct size: {} bytes",
-        std::mem::size_of::<ax_rnd::Axrnd>()
+        std::mem::size_of::<ax_rnd::AxRng>()
     );
 }
 

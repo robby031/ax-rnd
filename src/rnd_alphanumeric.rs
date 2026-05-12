@@ -1,6 +1,6 @@
-use super::Axrnd;
+use crate::rnd::AxRng;
 
-impl Axrnd {
+impl AxRng {
     pub fn next_alphanumeric(&mut self, len: usize) -> String {
         const CHARSET: &[u8; 62] =
             b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

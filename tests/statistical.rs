@@ -1,4 +1,4 @@
-use ax_rnd::{Axrnd, rnd};
+use ax_rnd::{rnd, AxRng};
 
 const SAMPLES: usize = 200_000;
 
@@ -41,11 +41,11 @@ fn avalanche_effect() {
         let flipped = base ^ 1;
 
         let out_base = {
-            let mut r = Axrnd::new(base);
+            let mut r = AxRng::new(base);
             r.next_u64()
         };
         let out_flipped = {
-            let mut r = Axrnd::new(flipped);
+            let mut r = AxRng::new(flipped);
             r.next_u64()
         };
 

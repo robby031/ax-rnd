@@ -1,8 +1,8 @@
-use ax_rnd::Axrnd;
+use ax_rnd::AxRng;
 use std::fs;
 use std::io::{self, BufRead, Write};
 
-fn generate_uuid_v4(rnd: &mut Axrnd) -> String {
+fn generate_uuid_v4(rnd: &mut AxRng) -> String {
     let mut bytes = [0u8; 16];
     rnd.fill_bytes(&mut bytes);
     bytes[6] = (bytes[6] & 0x0F) | 0x40;
@@ -52,7 +52,7 @@ fn main() {
                     .as_nanos() as u64
             });
 
-            let mut rnd = Axrnd::new(seed);
+            let mut rnd = AxRng::new(seed);
             let mut buf = vec![0u8; count];
             rnd.fill_bytes(&mut buf);
 
@@ -78,7 +78,7 @@ fn main() {
                     .as_nanos() as u64
             });
 
-            let mut rnd = Axrnd::new(seed);
+            let mut rnd = AxRng::new(seed);
             println!("{}", rnd.alpha(len));
         }
         "u64" => {
@@ -94,7 +94,7 @@ fn main() {
                     .as_nanos() as u64
             });
 
-            let mut rnd = Axrnd::new(seed);
+            let mut rnd = AxRng::new(seed);
             for _ in 0..count {
                 println!("{}", rnd.next_u64());
             }
@@ -112,7 +112,7 @@ fn main() {
                     .as_nanos() as u64
             });
 
-            let mut rnd = Axrnd::new(seed);
+            let mut rnd = AxRng::new(seed);
             for _ in 0..count {
                 println!("{}", generate_uuid_v4(&mut rnd));
             }
@@ -130,46 +130,86 @@ fn main() {
                     .as_nanos() as u64
             });
 
-            let mut rnd = Axrnd::new(seed);
+            let mut rnd = AxRng::new(seed);
             println!("{}", rnd.token(len));
         }
         "shuffle" => {
-            let seed = args.get(2).and_then(|s| parse_seed(s)).unwrap_or_else(|| {
+            let mut seed: Option<u64> = None;
+            let mut file_path: Option<String> = None;
+
+            let mut i = 2;
+            while i < args.len() {
+                match args[i].as_str() {
+                    "-f" | "--file" => {
+                        if i + 1 < args.len() {
+                            file_path = Some(args[i + 1].clone());
+                            i += 2;
+                        } else {
+                            eprintln!("Error: -f/--file requires a path");
+                            std::process::exit(1);
+                        }
+                    }
+                    "-s" | "--seed" => {
+                        if i + 1 < args.len() {
+                            seed = parse_seed(&args[i + 1]);
+                            if seed.is_none() {
+                                eprintln!("Error: invalid seed value");
+                                std::process::exit(1);
+                            }
+                            i += 2;
+                        } else {
+                            eprintln!("Error: -s/--seed requires a value");
+                            std::process::exit(1);
+                        }
+                    }
+                    _ => {
+                        if file_path.is_none() && args[i].parse::<u64>().is_err() {
+                            file_path = Some(args[i].clone());
+                        } else if seed.is_none() {
+                            if let Some(s) = parse_seed(&args[i]) {
+                                seed = Some(s);
+                            }
+                        }
+                        i += 1;
+                    }
+                }
+            }
+
+            let seed = seed.unwrap_or_else(|| {
                 use std::time::{SystemTime, UNIX_EPOCH};
                 SystemTime::now()
                     .duration_since(UNIX_EPOCH)
-                    .unwrap()
+                    .unwrap_or_else(|_| {
+                        std::time::Duration::from_nanos(0xA0761D6478BD642F)
+                    })
                     .as_nanos() as u64
             });
 
-            let mut rnd = Axrnd::new(seed);
+            let mut rnd = AxRng::new(seed);
 
-            if let Some(file_path) = args.get(2) {
-                if file_path.parse::<u64>().is_err() {
-                    let content = fs::read_to_string(file_path).unwrap_or_else(|_| {
-                        eprintln!("Error: Cannot read file: {}", file_path);
-                        std::process::exit(1);
-                    });
-                    let mut lines: Vec<&str> = content.lines().collect();
-                    shuffle_lines(&mut lines, &mut rnd);
-                    for line in lines {
-                        println!("{}", line);
+            if let Some(path) = file_path {
+                let content = fs::read_to_string(&path).unwrap_or_else(|e| {
+                    eprintln!("Error: Cannot read file '{}': {}", path, e);
+                    std::process::exit(1);
+                });
+                let mut lines: Vec<&str> = content.lines().collect();
+                shuffle_lines(&mut lines, &mut rnd);
+                for line in lines {
+                    println!("{}", line);
+                }
+            } else {
+                let stdin = io::stdin();
+                let mut lines: Vec<String> = Vec::new();
+                for line in stdin.lock().lines() {
+                    match line {
+                        Ok(l) => lines.push(l),
+                        Err(_) => break,
                     }
-                    return;
                 }
-            }
-
-            let stdin = io::stdin();
-            let mut lines: Vec<String> = Vec::new();
-            for line in stdin.lock().lines() {
-                match line {
-                    Ok(l) => lines.push(l),
-                    Err(_) => break,
+                shuffle_lines(&mut lines, &mut rnd);
+                for line in lines {
+                    println!("{}", line);
                 }
-            }
-            shuffle_lines(&mut lines, &mut rnd);
-            for line in lines {
-                println!("{}", line);
             }
         }
         _ => print_usage(),
@@ -190,7 +230,7 @@ fn parse_seed(s: &str) -> Option<u64> {
     }
 }
 
-fn shuffle_lines<T>(lines: &mut [T], rnd: &mut Axrnd) {
+fn shuffle_lines<T>(lines: &mut [T], rnd: &mut AxRng) {
     let len = lines.len();
     if len <= 1 {
         return;
@@ -202,7 +242,7 @@ fn shuffle_lines<T>(lines: &mut [T], rnd: &mut Axrnd) {
 }
 
 fn print_usage() {
-    println!("axrnd - Fast rnd CLI");
+    println!("AXRND - CLI tool for random number generation");
     println!();
     println!("USAGE:");
     println!("  axrnd <command> [args]");
@@ -211,7 +251,7 @@ fn print_usage() {
     println!("  bytes [count] [--hex] [seed]  Generate random bytes");
     println!("  alpha [len]           [seed]  Generate alphanumeric (base62)");
     println!("  token [len]           [seed]  Generate URL-safe token (base64url)");
-    println!("  shuffle [file]        [seed]  Shuffle lines from stdin or file");
+    println!("  shuffle [-f FILE] [-s SEED]   Shuffle lines from stdin or file");
     println!("  u64   [count]         [seed]  Generate random u64 numbers");
     println!("  uuid  [count]         [seed]  Generate UUID v4");
     println!();
@@ -226,8 +266,10 @@ fn print_usage() {
     println!("  axrnd bytes 32 --hex");
     println!("  axrnd alpha 16");
     println!("  axrnd token 32");
-    println!("  axrnd shuffle file.txt");
+    println!("  axrnd shuffle -f file.txt");
+    println!("  axrnd shuffle -f file.txt -s 12345");
     println!("  echo 'a b c' | axrnd shuffle");
+    println!("  echo 'a b c' | axrnd shuffle -s 42");
     println!("  axrnd u64 5");
     println!("  axrnd uuid 3");
     println!("  axrnd bytes 32 12345");

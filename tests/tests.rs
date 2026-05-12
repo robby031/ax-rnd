@@ -1,4 +1,4 @@
-use ax_rnd::{Axrnd, bounded_u64, fill_bytes, fill_u32, fill_u64, rnd};
+use ax_rnd::{AxRng, bounded_u64, fill_bytes, fill_u32, fill_u64, rnd};
 
 #[test]
 fn deterministic_sequence() {
@@ -193,7 +193,7 @@ fn state_roundtrip() {
 
     let state = rnd.state();
 
-    let mut restored = Axrnd::from_raw(state[0]);
+    let mut restored = AxRng::from_raw(state[0]);
 
     for _ in 0..1000 {
         assert_eq!(rnd.next_u64(), restored.next_u64(),);
