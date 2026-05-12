@@ -1,7 +1,7 @@
 use std::hint::black_box;
 use std::time::{Duration, Instant};
 
-use ax_rnd::{fill_bytes, fill_u64, rnd};
+use ax_rnd::{fill_bytes, fill_u64, rng};
 use fastrand::Rng as FastRng;
 use rand::rngs::SmallRng;
 use rand::{RngCore, SeedableRng};
@@ -10,7 +10,7 @@ const WARMUP_MS: u64 = 100;
 const MEASURE_MS: u64 = 3000;
 
 fn bench_next_u64() {
-    let mut r = rnd(123);
+    let mut r = rng(123);
     let name = "next_u64";
 
     // warmup
@@ -42,7 +42,7 @@ fn bench_next_u64() {
 }
 
 fn bench_next_u32() {
-    let mut r = rnd(123);
+    let mut r = rng(123);
     let name = "next_u32";
 
     let warmup_end = Instant::now() + Duration::from_millis(WARMUP_MS);
@@ -72,7 +72,7 @@ fn bench_next_u32() {
 }
 
 fn bench_next_f64() {
-    let mut r = rnd(123);
+    let mut r = rng(123);
     let name = "next_f64";
 
     let warmup_end = Instant::now() + Duration::from_millis(WARMUP_MS);
@@ -102,7 +102,7 @@ fn bench_next_f64() {
 }
 
 fn bench_fill_bytes(size: usize) {
-    let mut r = rnd(123);
+    let mut r = rng(123);
     let mut buf = vec![0u8; size];
     let name = format!("fill_bytes/{}", humansize(size));
 
@@ -137,7 +137,7 @@ fn bench_fill_bytes(size: usize) {
 }
 
 fn bench_fill_u64(size: usize) {
-    let mut r = rnd(123);
+    let mut r = rng(123);
     let mut buf = vec![0u64; size];
     let name = format!("fill_u64/{}", humansize(size * 8));
 
@@ -176,7 +176,7 @@ fn bench_head_to_head_next_u64() {
 
     // axrng
     {
-        let mut ax = rnd(123);
+        let mut ax = rng(123);
         let warmup_end = Instant::now() + Duration::from_millis(WARMUP_MS);
         while Instant::now() < warmup_end {
             black_box(ax.next_u64());
@@ -251,7 +251,7 @@ fn bench_head_to_head_fill_1mb() {
     println!("\n  --- head-to-head fill_bytes/1MB ---");
 
     const SIZE: usize = 1024 * 1024;
-    let mut ax_r = rnd(123);
+    let mut ax_r = rng(123);
     let mut fast_r = FastRng::with_seed(123);
     let mut small_r = SmallRng::seed_from_u64(123);
     let mut ax_buf = vec![0u8; SIZE];
@@ -344,7 +344,7 @@ fn bench_latency_distribution() {
     println!("  note: single-call latency (~400 ps) is below timer resolution.");
     println!("        distribution is measured over batches and divided.");
 
-    let mut r = rnd(123);
+    let mut r = rng(123);
     const BATCH: usize = 1_000;
     const SAMPLES: usize = 20_000;
     let mut samples = Vec::with_capacity(SAMPLES);
@@ -393,7 +393,7 @@ fn bench_startup_latency() {
 fn bench_split_latency() {
     println!("\n=== split latency ===");
 
-    let mut r = rnd(123);
+    let mut r = rng(123);
     let target = Duration::from_millis(MEASURE_MS);
     let start = Instant::now();
     let mut iters: u64 = 0;
@@ -411,7 +411,7 @@ fn bench_split_latency() {
 fn bench_bounded_u64_latency() {
     println!("\n=== bounded_u64 latency (upper=100) ===");
 
-    let mut r = rnd(123);
+    let mut r = rng(123);
     let target = Duration::from_millis(MEASURE_MS);
     let start = Instant::now();
     let mut iters: u64 = 0;
@@ -436,7 +436,7 @@ fn bench_seed_quality() {
     let mut first_vals = std::collections::HashSet::new();
     let mut collisions = 0usize;
     for seed in 0..STREAMS {
-        let mut r = rnd(seed as u64);
+        let mut r = rng(seed as u64);
         let v = r.next_u64();
         if !first_vals.insert(v) {
             collisions += 1;
@@ -452,8 +452,8 @@ fn bench_seed_quality() {
     // Test 2: seed+1 stream must diverge from seed stream within 16 values
     let mut max_diverge = 0usize;
     for seed in 0..STREAMS {
-        let mut a = rnd(seed as u64);
-        let mut b = rnd(seed as u64 + 1);
+        let mut a = rng(seed as u64);
+        let mut b = rng(seed as u64 + 1);
         let mut diverged_at = SAMPLES;
         for i in 0..SAMPLES {
             if a.next_u64() != b.next_u64() {
@@ -470,7 +470,7 @@ fn bench_seed_quality() {
     );
 
     // Test 3: split streams must diverge immediately
-    let mut a = rnd(42);
+    let mut a = rng(42);
     let mut b = a.split();
     let mut split_diverge = SAMPLES;
     for i in 0..SAMPLES {

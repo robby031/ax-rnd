@@ -1,8 +1,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-pub mod rnd;
-pub mod rnd_alphanumeric;
-pub use rnd::AxRng;
+pub mod rng;
+pub mod rng_alphanumeric;
+pub use rng::AxRng;
 
 #[cfg(feature = "std")]
 use std::cell::Cell;
@@ -143,23 +143,23 @@ where
 }
 
 #[inline]
-pub fn rnd(seed: u64) -> AxRng {
+pub fn rng(seed: u64) -> AxRng {
     AxRng::new(seed)
 }
 
 #[inline(always)]
-pub fn fill_bytes(rnd: &mut AxRng, out: &mut [u8]) {
-    rnd::fill_bytes(rnd, out)
+pub fn fill_bytes(rng: &mut AxRng, out: &mut [u8]) {
+    rng::fill_bytes(rng, out)
 }
 
 #[inline(always)]
-pub fn fill_u64(rnd: &mut AxRng, out: &mut [u64]) {
-    rnd::fill_u64(rnd, out)
+pub fn fill_u64(rng: &mut AxRng, out: &mut [u64]) {
+    rng::fill_u64(rng, out)
 }
 
 #[inline(always)]
-pub fn fill_u32(rnd: &mut AxRng, out: &mut [u32]) {
-    rnd::fill_u32(rnd, out)
+pub fn fill_u32(rng: &mut AxRng, out: &mut [u32]) {
+    rng::fill_u32(rng, out)
 }
 
 #[inline(always)]
@@ -229,8 +229,8 @@ mod tests {
 
     #[test]
     fn deterministic() {
-        let mut a = rnd(123);
-        let mut b = rnd(123);
+        let mut a = rng(123);
+        let mut b = rng(123);
 
         for _ in 0..1000 {
             assert_eq!(a.next_u64(), b.next_u64(),);
@@ -239,11 +239,11 @@ mod tests {
 
     #[test]
     fn fill_bytes_works() {
-        let mut rnd = rnd(999);
+        let mut rng = rng(999);
 
         let mut buf = [0u8; 128];
 
-        fill_bytes(&mut rnd, &mut buf);
+        fill_bytes(&mut rng, &mut buf);
 
         let mut zero = true;
 
@@ -259,7 +259,7 @@ mod tests {
 
     #[test]
     fn split_is_different() {
-        let mut a = rnd(42);
+        let mut a = rng(42);
 
         let mut b = a.split();
 
@@ -268,10 +268,10 @@ mod tests {
 
     #[test]
     fn bounded_range() {
-        let mut rnd = rnd(123);
+        let mut rng = rng(123);
 
         for _ in 0..10000 {
-            let v = rnd.bounded_u64(10);
+            let v = rng.bounded_u64(10);
 
             assert!(v < 10);
         }

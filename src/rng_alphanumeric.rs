@@ -1,4 +1,4 @@
-use crate::rnd::AxRng;
+use crate::rng::AxRng;
 
 impl AxRng {
     pub fn next_alphanumeric(&mut self, len: usize) -> String {

@@ -1,9 +1,9 @@
-use ax_rnd::{AxRng, bounded_u64, fill_bytes, fill_u32, fill_u64, rnd};
+use ax_rnd::{AxRng, bounded_u64, fill_bytes, fill_u32, fill_u64, rng};
 
 #[test]
 fn deterministic_sequence() {
-    let mut a = rnd(123456);
-    let mut b = rnd(123456);
+    let mut a = rng(123456);
+    let mut b = rng(123456);
 
     for _ in 0..100_000 {
         assert_eq!(a.next_u64(), b.next_u64(),);
@@ -12,8 +12,8 @@ fn deterministic_sequence() {
 
 #[test]
 fn different_seed_produces_different_stream() {
-    let mut a = rnd(1);
-    let mut b = rnd(2);
+    let mut a = rng(1);
+    let mut b = rng(2);
 
     let mut diff = false;
 
@@ -29,7 +29,7 @@ fn different_seed_produces_different_stream() {
 
 #[test]
 fn fill_bytes_not_zero() {
-    let mut rnd = rnd(777);
+    let mut rnd = rng(777);
 
     let mut buf = [0u8; 4096];
 
@@ -49,7 +49,7 @@ fn fill_bytes_not_zero() {
 
 #[test]
 fn fill_u64_changes_memory() {
-    let mut rnd = rnd(123);
+    let mut rnd = rng(123);
 
     let mut data = [0u64; 1024];
 
@@ -69,7 +69,7 @@ fn fill_u64_changes_memory() {
 
 #[test]
 fn fill_u32_changes_memory() {
-    let mut rnd = rnd(999);
+    let mut rnd = rng(999);
 
     let mut data = [0u32; 2048];
 
@@ -89,7 +89,7 @@ fn fill_u32_changes_memory() {
 
 #[test]
 fn bounded_u64_stays_in_range() {
-    let mut rnd = rnd(555);
+    let mut rnd = rng(555);
 
     for _ in 0..100_000 {
         let value = rnd.bounded_u64(37);
@@ -109,7 +109,7 @@ fn top_level_bounded_works() {
 
 #[test]
 fn next_bool_works() {
-    let mut rnd = rnd(1);
+    let mut rnd = rng(1);
 
     let mut true_count = 0;
     let mut false_count = 0;
@@ -128,7 +128,7 @@ fn next_bool_works() {
 
 #[test]
 fn next_f32_range() {
-    let mut rnd = rnd(321);
+    let mut rnd = rng(321);
 
     for _ in 0..100_000 {
         let v = rnd.next_f32();
@@ -140,7 +140,7 @@ fn next_f32_range() {
 
 #[test]
 fn next_f64_range() {
-    let mut rnd = rnd(321);
+    let mut rnd = rng(321);
 
     for _ in 0..100_000 {
         let v = rnd.next_f64();
@@ -152,7 +152,7 @@ fn next_f64_range() {
 
 #[test]
 fn split_produces_new_stream() {
-    let mut rnd = rnd(42);
+    let mut rnd = rng(42);
 
     let mut split = rnd.split();
 
@@ -170,7 +170,7 @@ fn split_produces_new_stream() {
 
 #[test]
 fn large_fill_stability() {
-    let mut rnd = rnd(888);
+    let mut rnd = rng(888);
 
     let mut data = vec![0u8; 1024 * 1024];
 
@@ -187,7 +187,7 @@ fn large_fill_stability() {
 
 #[test]
 fn state_roundtrip() {
-    let mut rnd = rnd(123);
+    let mut rnd = rng(123);
 
     let _ = rnd.next_u64();
 
@@ -202,7 +202,7 @@ fn state_roundtrip() {
 
 #[test]
 fn next_alphanumeric_length() {
-    let mut rnd = rnd(42);
+    let mut rnd = rng(42);
 
     for len in [0, 1, 10, 32, 100, 1000] {
         let s = rnd.next_alphanumeric(len);
@@ -212,7 +212,7 @@ fn next_alphanumeric_length() {
 
 #[test]
 fn next_alphanumeric_charset() {
-    let mut rnd = rnd(999);
+    let mut rnd = rng(999);
     let s = rnd.next_alphanumeric(1000);
 
     for c in s.chars() {
@@ -222,8 +222,8 @@ fn next_alphanumeric_charset() {
 
 #[test]
 fn next_alphanumeric_deterministic() {
-    let mut a = rnd(12345);
-    let mut b = rnd(12345);
+    let mut a = rng(12345);
+    let mut b = rng(12345);
 
     for _ in 0..100 {
         assert_eq!(a.next_alphanumeric(50), b.next_alphanumeric(50));
@@ -232,7 +232,7 @@ fn next_alphanumeric_deterministic() {
 
 #[test]
 fn next_base64url_charset() {
-    let mut rnd = rnd(999);
+    let mut rnd = rng(999);
     let s = rnd.next_base64url(1000);
 
     for c in s.chars() {
@@ -246,8 +246,8 @@ fn next_base64url_charset() {
 
 #[test]
 fn next_base64url_deterministic() {
-    let mut a = rnd(12345);
-    let mut b = rnd(12345);
+    let mut a = rng(12345);
+    let mut b = rng(12345);
 
     for _ in 0..100 {
         assert_eq!(a.next_base64url(50), b.next_base64url(50));
@@ -256,7 +256,7 @@ fn next_base64url_deterministic() {
 
 #[test]
 fn alpha_vs_token_different() {
-    let mut rnd = rnd(42);
+    let mut rnd = rng(42);
     let alpha = rnd.alpha(32);
     let token = rnd.token(32);
     assert_ne!(alpha, token);

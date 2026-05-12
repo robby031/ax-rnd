@@ -1,4 +1,4 @@
-use ax_rnd::{fill_bytes as ax_fill_bytes, rnd as ax_rnd};
+use ax_rnd::{fill_bytes as ax_fill_bytes, rng as ax_rnd};
 use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
 use fastrand::Rng as FastRng;
 use rand::rngs::SmallRng;

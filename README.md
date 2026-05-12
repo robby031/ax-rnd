@@ -1,6 +1,6 @@
 # ax-rnd
 
-Axrnd is a fast, small random number generator (rnd) library and CLI tool written in Rust.
+AxRng is a fast, small random number generator (rng) library and CLI tool written in Rust.
 
 [![ax-rnd](https://img.shields.io/crates/v/ax-rnd.svg)](https://crates.io/crates/ax-rnd)
 [![docs-ax-rnd](https://docs.rs/ax-rnd/badge.svg?label=docs-ax-rnd)](https://docs.rs/ax-rnd)
@@ -20,14 +20,14 @@ Axrnd is a fast, small random number generator (rnd) library and CLI tool writte
 ### Benchmark Results (Release Mode)
 
 **Single-call (`next_u64`):**
-| rnd | ps/iter | vs fastrand |
+| rng | ps/iter | vs fastrand |
 |-----|---------|-------------|
 | **ax-rnd** | **317** | **0.9% faster** |
 | fastrand | 321 | baseline |
 | rand_small | 692 | 2.2x slower |
 
 **Bulk fill (`fill_bytes/1MB`):**
-| rnd | GiB/s | vs fastrand |
+| rng | GiB/s | vs fastrand |
 |-----|-------|-------------|
 | **ax-rnd** | **37.68** | **0.1% faster** |
 | fastrand | 37.64 | baseline |
@@ -86,10 +86,10 @@ fill(&mut buf);
 For production use where you need deterministic behavior:
 
 ```rust
-use ax_rnd::{rnd, AxRng};
+use ax_rnd::{rng, AxRng};
 
 // Create RNG with seed
-let mut rng = rnd(12345);
+let mut rng = rng(12345);
 
 // Generate random values
 let x = rng.next_u64();
@@ -101,67 +101,69 @@ let f = rng.next_f64();
 ### Alphanumeric Strings
 
 ```rust
-use ax_rnd::rnd;
+use ax_rnd::rng;
 
-let mut rnd = rnd(42);
+let mut rng = rng(42);
 
 // Base62 (A-Z, a-z, 0-9) - 62 characters
-let alpha = rnd.alpha(32); // "aB3xY9..."
+let alpha = rng.next_alphanumeric(32);
+let token = rng.alpha(32);  // alias
 
-// Base64url (A-Z, a-z, 0-9, -, _) - 64 characters, URL-safe
-let token = rnd.token(32); // "UxelSo4vKQ3CgvhV..."
+// Base64url (A-Z, a-z, 0-9, -, _) - 64 characters
+let url_token = rng.next_base64url(32);
+let token = rng.token(32);  // alias
 ```
 
 ### Bounded Random Numbers
 
 ```rust
-use ax_rnd::rnd;
+use ax_rnd::rng;
 
-let mut rnd = rnd(42);
+let mut rng = rng(42);
 
 // Random number in [0, upper)
-let x = rnd.bounded_u64(100);
-let y = rnd.bounded_u32(50);
+let x = rng.bounded_u64(100);
+let y = rng.bounded_u32(50);
 ```
 
 ### Bulk Operations
 
 ```rust
-use ax_rnd::rnd;
+use ax_rnd::rng;
 
-let mut rnd = rnd(42);
+let mut rng = rng(42);
 
 // Fill byte buffer
 let mut buf = [0u8; 1024];
-rnd.fill_bytes(&mut buf);
+rng.fill_bytes(&mut buf);
 
 // Fill u64 buffer
 let mut u64_buf = [0u64; 16];
-rnd.fill_u64(&mut u64_buf);
+rng.fill_u64(&mut u64_buf);
 
 // Fill u32 buffer
 let mut u32_buf = [0u32; 32];
-rnd.fill_u32(&mut u32_buf);
+rng.fill_u32(&mut u32_buf);
 ```
 
 ### State Management
 
 ```rust
-use ax_rnd::Axrnd;
+use ax_rnd::AxRng;
 
-let mut rnd = Axrnd::new(12345);
+let mut rng = AxRng::new(12345);
 
 // Get current state
-let state = rnd.state(); // [u64; 1]
+let state = rng.state(); // [u64; 1]
 
 // Restore from state
-let mut restored = Axrnd::from_raw(state[0]);
+let mut restored = AxRng::from_raw(state[0]);
 
 // Split for independent streams
-let mut other = rnd.split();
+let mut other = rng.split();
 
 // Reseed
-rnd.reseed(54321);
+rng.reseed(54321);
 ```
 
 ### Top-level Functions
@@ -169,7 +171,7 @@ rnd.reseed(54321);
 ```rust
 use ax_rnd;
 
-// One-off random values (creates new rnd each time)
+// One-off random values (creates new rng each time)
 let x = ax_rnd::random_u64(42);
 let y = ax_rnd::random_u32(42);
 let b = ax_rnd::random_bool(42);
@@ -188,7 +190,7 @@ let token = ax_rnd::token(42, 32);
 ### Commands
 
 ```bash
-ax-rnd <command> [args]
+ax_rnd <command> [args]
 ```
 
 | Command                        | Description                         |
@@ -204,51 +206,50 @@ ax-rnd <command> [args]
 
 ```bash
 # Generate 64 random bytes (binary output)
-ax-rnd bytes 64 > random.bin
+ax_rnd bytes 64 > random.bin
 
 # Generate 32 bytes as hex string
-ax-rnd bytes 32 --hex
+ax_rnd bytes 32 --hex
 # 836233f222448066354d9340859e3743
 
 # Generate 16-char alphanumeric string
-ax-rnd alpha 16
+ax_rnd alpha 16
 # SEV3G6JYHei5YFhe
 
 # Generate 32-char URL-safe token
-ax-rnd token 32
-# UxelSo4vKQ3CgvhV
+ax_rnd token 32
+# 5J8hK3mP9qR2sT4uV6wX8yZ0
 
 # Generate 5 random u64 numbers
-ax-rnd u64 5
-# 9370916739074745922
-# 8432900285853589045
+ax_rnd u64 5
+# 12345678901234567890
+# 98765432109876543210
 # ...
 
-# Generate 3 UUIDs
-ax-rnd uuid 3
-# f59ba06a-85b2-4423-b795-999e1bd2e038
-# adea1bad-c71d-49d3-8ab2-2bef2010a96a
+# Generate 3 UUID v4
+ax_rnd uuid 3
+# a1b2c3d4-e5f6-7890-abcd-ef1234567890
 # ...
-
-# Shuffle lines from stdin
-echo -e "a\nb\nc\nd" | ax-rnd shuffle
-# b
-# d
-# a
-# c
 
 # Shuffle lines from file
-ax-rnd shuffle file.txt
+echo -e "a\nb\nc\nd" | ax_rnd shuffle
+# c
+# a
+# d
+# b
+
+# Shuffle lines from file with seed
+ax_rnd shuffle file.txt
 
 # Use specific seed for reproducibility
-ax-rnd bytes 32 12345
+ax_rnd bytes 32 12345
 ```
 
 ### Options
 
 - `count/len` - Number of bytes/chars/numbers (default: 32)
 - `--hex` - Output bytes as hex string
-- `seed` - rnd seed (default: current timestamp)
+- `seed` - rng seed (default: current timestamp)
   - Use `time` for current timestamp
   - Use numeric value for fixed seed
 

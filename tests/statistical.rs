@@ -1,10 +1,10 @@
-use ax_rnd::{rnd, AxRng};
+use ax_rnd::{AxRng, rng};
 
 const SAMPLES: usize = 200_000;
 
 #[test]
 fn bit_histogram_uniform() {
-    let mut rnd = rnd(42);
+    let mut rnd = rng(42);
     let mut counts = [0u64; 64];
 
     for _ in 0..SAMPLES {
@@ -31,7 +31,7 @@ fn bit_histogram_uniform() {
 
 #[test]
 fn avalanche_effect() {
-    let mut rnd = rnd(0xAABBCCDDEEFF0011);
+    let mut rnd = rng(0xAABBCCDDEEFF0011);
 
     let mut total_flips = 0u64;
     let trials = 50_000;
@@ -67,8 +67,8 @@ fn avalanche_effect() {
 
 #[test]
 fn stream_correlation_near_zero() {
-    let mut a = rnd(123456);
-    let mut b = rnd(654321);
+    let mut a = rng(123456);
+    let mut b = rng(654321);
 
     let n = 100_000usize;
     let mut greater = 0usize;
@@ -97,7 +97,7 @@ fn stream_correlation_near_zero() {
 
 #[test]
 fn low_byte_uniformity() {
-    let mut rnd = rnd(777);
+    let mut rnd = rng(777);
     let mut low_counts = [0u64; 256];
     let mut high_counts = [0u64; 256];
 
@@ -139,7 +139,7 @@ fn practrand_stream_quality() {
     use std::fs::File;
     use std::io::Write;
 
-    let mut rnd = rnd(0xDEADBEEFCAFEBABE);
+    let mut rnd = rng(0xDEADBEEFCAFEBABE);
     let bytes = 8 * 1024 * 1024usize;
 
     let mut buf = vec![0u8; bytes];

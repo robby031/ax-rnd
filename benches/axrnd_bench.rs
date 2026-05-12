@@ -1,24 +1,24 @@
-use ax_rnd::{fill_bytes, fill_u64, rnd};
+use ax_rnd::{fill_bytes, fill_u64, rng};
 use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
 
 fn bench_single_core(c: &mut Criterion) {
     let mut group = c.benchmark_group("axrnd-core");
     group.bench_function("next_u64", |b| {
-        let mut rnd = rnd(123);
+        let mut rnd = rng(123);
         b.iter(|| {
             black_box(rnd.next_u64());
         });
     });
 
     group.bench_function("next_u32", |b| {
-        let mut rnd = rnd(123);
+        let mut rnd = rng(123);
         b.iter(|| {
             black_box(rnd.next_u32());
         });
     });
 
     group.bench_function("next_f64", |b| {
-        let mut rnd = rnd(123);
+        let mut rnd = rng(123);
         b.iter(|| {
             black_box(rnd.next_f64());
         });
@@ -33,7 +33,7 @@ fn bench_fill_bytes(c: &mut Criterion) {
     for size in sizes {
         group.throughput(Throughput::Bytes(size as u64));
         group.bench_with_input(BenchmarkId::from_parameter(size), &size, |b, &size| {
-            let mut rnd = rnd(123);
+            let mut rnd = rng(123);
             let mut buf = vec![0u8; size];
             b.iter(|| {
                 fill_bytes(&mut rnd, &mut buf);
@@ -51,7 +51,7 @@ fn bench_fill_u64(c: &mut Criterion) {
     for size in sizes {
         group.throughput(Throughput::Elements(size as u64));
         group.bench_with_input(BenchmarkId::from_parameter(size), &size, |b, &size| {
-            let mut rnd = rnd(123);
+            let mut rnd = rng(123);
             let mut data = vec![0u64; size];
             b.iter(|| {
                 fill_u64(&mut rnd, &mut data);
