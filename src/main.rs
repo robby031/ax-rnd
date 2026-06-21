@@ -165,10 +165,10 @@ fn main() {
                     _ => {
                         if file_path.is_none() && args[i].parse::<u64>().is_err() {
                             file_path = Some(args[i].clone());
-                        } else if seed.is_none() {
-                            if let Some(s) = parse_seed(&args[i]) {
-                                seed = Some(s);
-                            }
+                        } else if seed.is_none()
+                            && let Some(s) = parse_seed(&args[i])
+                        {
+                            seed = Some(s);
                         }
                         i += 1;
                     }
