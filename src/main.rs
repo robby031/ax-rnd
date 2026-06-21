@@ -179,9 +179,7 @@ fn main() {
                 use std::time::{SystemTime, UNIX_EPOCH};
                 SystemTime::now()
                     .duration_since(UNIX_EPOCH)
-                    .unwrap_or_else(|_| {
-                        std::time::Duration::from_nanos(0xA0761D6478BD642F)
-                    })
+                    .unwrap_or_else(|_| std::time::Duration::from_nanos(0xA0761D6478BD642F))
                     .as_nanos() as u64
             });
 
