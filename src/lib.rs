@@ -339,7 +339,10 @@ mod tests {
     fn convenience_api_base64url() {
         let s = base64url(32);
         assert_eq!(s.len(), 32);
-        assert!(s.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_'));
+        assert!(
+            s.chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+        );
     }
 
     #[cfg(feature = "std")]
